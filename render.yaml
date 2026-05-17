@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: llm-gateway
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: MASTER_KEY
+        generateValue: true
+      - key: REDIS_URL
+        fromService:
+          name: llm-gateway-redis
+          type: redis
+          property: connectionString
+      - key: DATABASE_URL
+        fromDatabase:
+          name: llm-gateway-db
+          property: connectionString
+      - key: DEFAULT_RPM
+        value: "60"
+      - key: DEFAULT_TPD
+        value: "100000"
+      - key: CACHE_TTL_SECONDS
+        value: "3600"
+
+  - type: redis
+    name: llm-gateway-redis
+    plan: free
+    maxmemoryPolicy: allkeys-lru
+
+databases:
+  - name: llm-gateway-db
+    plan: free
+    databaseName: gateway
+    user: gateway
